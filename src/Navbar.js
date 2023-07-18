@@ -7,64 +7,55 @@ function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleMenuToggle = () => {
-    setIsMenuOpen(!isMenuOpen);
-    };
-
-    const [activePanel, setActivePanel] = useState('');
-
-    const handlePanelHover = (panelName) => {
-        setActivePanel(panelName);
+        setIsMenuOpen(!isMenuOpen);
     };
 
     return (
         <nav className={`navbar ${isMenuOpen ? 'menu-open' : ''}`}>
-            <div className="navbar-menu" onClick={handleMenuToggle}>
+            <div className="navbar-menu disable-select" onClick={handleMenuToggle}>
                 <div className={`navbar-logo ${isMenuOpen ? 'inverted' : ''}`}>
                     <img src={logo} alt="logo" />
                 </div>
             </div>
+
             {isMenuOpen && (
-            <div className="sidebar">
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            </div>
-            )}\
+                <div className="sidebar">
+                    <a href="#hero-section">Section 1</a>
+                    <a href="#">Section 2</a>
+                    <a href="#">Section 3</a>
+                    <a href="#">Section 4</a>
+                    <a href="#">Section 5</a>
+                </div>
+            )}
+
             <ul className="navbar-menu">
-                <li
-                className={`navbar-item ${activePanel === 'panel1' ? 'active' : ''}`}
-                onMouseEnter={() => handlePanelHover('panel1')}
-                onMouseLeave={() => handlePanelHover('')}
-                >
-                <a href=".">Resources</a>
-                {activePanel === 'panel1' && (
-                    <div className="panel">
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                <div class="dropdown">
+                    <button class="dropbtn">Resources
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="#" target="_blank">GAN</a>
+                        <a href="#" target="_blank">Conditional GAN</a>
+                        <a href="#" target="_blank">Semi-supervised GAN</a>
+                        <a href="#" target="_blank">Auxiliary Classifier GAN</a>
                     </div>
-                )}
-                </li>
-                <li
-                className={`navbar-item ${activePanel === 'panel2' ? 'active' : ''}`}
-                onMouseEnter={() => handlePanelHover('panel2')}
-                onMouseLeave={() => handlePanelHover('')}
-                >
-                <a href=".">Source</a>
-                {activePanel === 'panel2' && (
-                    <div className="panel">
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                </div>
+                
+                <div class="dropdown">
+                    <button class="dropbtn">Source
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="#" target="_blank">GAN</a>
+                        <a href="#" target="_blank">Conditional GAN</a>
+                        <a href="#" target="_blank">Semi-supervised GAN</a>
+                        <a href="#" target="_blank">Auxiliary Classifier GAN</a>
+                        <a href="#" target="_blank">tf.js Training Example</a>
+                        <a href="#" target="_blank">ACGAN MNIST TensorFlow Example</a>
                     </div>
-                )}
-                </li>
-                <li
-                className={`navbar-item ${activePanel === 'panel3' ? 'active' : ''}`}
-                onMouseEnter={() => handlePanelHover('panel3')}
-                onMouseLeave={() => handlePanelHover('')}
-                >
-                <a href=".">About</a>
-                {activePanel === 'panel3' && (
-                    <div className="panel">
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                    </div>
-                )}
-                </li>
+                </div>
+                
+                <a>About</a>
             </ul>
         </nav>
     ); 
