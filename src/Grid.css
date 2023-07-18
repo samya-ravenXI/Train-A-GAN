@@ -1,0 +1,117 @@
+body {
+    background-color: azure !important;
+}
+
+.Grid {
+    text-align: center;
+  }
+
+.head {
+    display: grid;
+    grid-template-columns: 13.5% 13.5% 13.5% 13.5% 13.5% 13.5% 13.5% 3%;
+}
+
+p {
+    font-size: 12.5px;
+}
+
+input, select{
+    margin: 0 7.5%;
+    text-align: center;
+}
+
+.heading {
+    padding: 10%;
+    padding-top: 10%;
+    font-size: 12.5px;
+}
+
+.ishape, .reshape {
+    display: grid;
+    grid-template-columns: 25% 25% 25%;
+    padding: 0% 20%;
+}
+
+.ishape, .reshape, .shape-head {
+    padding: 2.5%;
+}
+
+.shape {
+    padding: 5%;
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+.info-head {
+    padding-bottom: 2.5%;
+}
+
+.info select{
+    width: 86%;
+}
+
+label {
+    font-size: 12.5px;
+}
+
+.info {
+    padding: 5%;
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+.e {
+    text-align: center;
+}
+
+input {
+    border: none;
+    border-radius: 2.5px;
+    color: rgba(0, 0, 0, 0.75);
+}
+
+.d {
+    width: 90%;
+}
+
+select {
+    border: none;
+    border-radius: 2.5px;
+    color: rgba(0, 0, 0, 0.565);
+}
+
+.min {
+    font-size: 50%;
+    border-radius: 2px;
+    border: none;
+}
+
+.gen, .dis {
+    padding: 3.5%;
+}
+
+.add {
+    font-size: 60%;
+    border: none;
+    border-radius: 2px;
+    margin-top: 2%;
+}
+
+.sub {
+    font-size: 70%;
+    border: none;
+    border-radius: 2px;
+    margin-top: 2%;
+    margin: 0 10%;
+}
+
+#output {
+    display: grid;
+    grid-template-columns: auto auto;
+    padding: 10% 5%;
+}
+
+#losses {
+    display: grid;
+    grid-template-columns: auto auto auto;
+}

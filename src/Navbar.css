@@ -1,0 +1,143 @@
+body {
+    font-family: "Adobe Arabic", Arial, sans-serif;
+  }  
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(21, 21, 21);
+    padding: 8px 30px;
+  }
+  
+  .navbar-logo img {
+    padding-top: 15%;
+    height: 35px;
+  }
+  
+  .navbar-menu {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .navbar-menu {
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .menu-open .navbar-logo {
+    transform: rotate(180deg) translate(-180px, 0);
+    position: relative;
+    z-index: 2;
+}
+  
+  .menu-open .navbar-logo::before {
+    transform: rotate(-180deg) translate(-180px, 0);
+    position: relative;
+    z-index: 2;
+}
+  
+  .menu-open .navbar-logo::after {
+    transform: rotate(-180deg) translate(-180px, 0);
+    position: relative;
+    z-index: 2;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 10px;
+    padding-top: 10%;
+    color: white;
+    z-index: 1;
+    border-radius: 15px;
+  }
+  
+  .navbar-item {
+    margin: 0px 15px;
+    font-size: medium;
+    font-weight: 50;
+  }
+  
+  .navbar-item a {
+    color: seashell;
+    text-decoration: none;
+    position: relative;
+  }
+  
+  .navbar-item a::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 0;
+    height: 0.1px;
+    margin-top: 0.5%;
+    background-color: rgba(255, 245, 238, 0.3);
+    transition: width 0.3s ease-out;
+    transform: translateX(-50%);
+  }
+  
+  .navbar-item a:hover::after {
+    width: 95%;
+  }
+
+  .panel {
+    position: absolute;
+    top: 100%;
+    left: -15%;
+    width: 200px;
+    margin-top: 21px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 15px;
+    display: none;
+  }
+  
+  .navbar-item.active .panel {
+    display: block;
+  }
+  
+  .image-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .image-container img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .trainagan {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+  }
+
+  .traingif {
+    position: relative;
+    width: 100%;
+    object-fit: cover;
+    z-index: -2;
+    transform: scaleY(1.31);
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 54%;
+    background-color: rgba(0, 0, 0, 0.3);
+    opacity: 1; /* Adjust the opacity as desired */
+    z-index: -1;
+  }
+  
