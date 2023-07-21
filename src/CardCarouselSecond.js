@@ -64,14 +64,6 @@ const CardCarouselSecond = () => {
     }
   }, [indexes.currentIndex]);
 
-  useEffect(() => {
-    const transitionInterval = setInterval(() => {
-      handleCardTransition();
-    }, 4000);
-
-    return () => clearInterval(transitionInterval);
-  }, [handleCardTransition, indexes]);
-
   return (
     <div className="containerS">
       <ul className="card-carouselS">
@@ -79,6 +71,7 @@ const CardCarouselSecond = () => {
           <div
             key={card.id}
             className={`cardS ${determineClasses(indexes, index)}`}
+            onClick={handleCardTransition}
           >
             <li>
               <h2>{card.title}</h2>

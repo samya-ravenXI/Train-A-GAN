@@ -29,23 +29,23 @@ function Navbar() {
             )}
 
             <ul className="navbar-menu">
-                <div class="dropdown">
-                    <button class="dropbtn">Resources
-                        <i class="fa fa-caret-down"></i>
+                <div className="dropdown">
+                    <button className="dropbtn">Resources
+                        <i className="fa fa-caret-down"></i>
                     </button>
-                    <div class="dropdown-content">
+                    <div className="dropdown-content">
                         <a href="#" target="_blank">GAN</a>
                         <a href="#" target="_blank">Conditional GAN</a>
                         <a href="#" target="_blank">Semi-supervised GAN</a>
-                        <a href="#" target="_blank">Auxiliary Classifier GAN</a>
+                        <a href="#" target="_blank">Auxiliary ClassNameifier GAN</a>
                     </div>
                 </div>
                 
-                <div class="dropdown">
-                    <button class="dropbtn">Source
-                        <i class="fa fa-caret-down"></i>
+                <div className="dropdown">
+                    <button className="dropbtn">Source
+                        <i className="fa fa-caret-down"></i>
                     </button>
-                    <div class="dropdown-content">
+                    <div className="dropdown-content">
                         <a href="#" target="_blank">GAN</a>
                         <a href="#" target="_blank">Conditional GAN</a>
                         <a href="#" target="_blank">Semi-supervised GAN</a>

@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useState } from "react";
 import "./CardCarousel.css";
 
+
 const cardItems = [
   {
     id: 1,
@@ -64,14 +65,6 @@ const CardCarousel = () => {
     }
   }, [indexes.currentIndex]);
 
-  useEffect(() => {
-    const transitionInterval = setInterval(() => {
-      handleCardTransition();
-    }, 4000);
-
-    return () => clearInterval(transitionInterval);
-  }, [handleCardTransition, indexes]);
-
   return (
     <div className="container">
       <ul className="card-carousel">
@@ -79,6 +72,7 @@ const CardCarousel = () => {
           <div
             key={card.id}
             className={`card ${determineClasses(indexes, index)}`}
+            onClick={handleCardTransition}
           >
             <li>
               <h2>{card.title}</h2>
