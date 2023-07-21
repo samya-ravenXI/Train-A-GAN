@@ -1,10 +1,9 @@
-body {
-    background-color: azure !important;
-}
+
 
 .Grid {
     text-align: center;
-  }
+    background-color: #f2f3f3;
+}
 
 .head {
     display: grid;
