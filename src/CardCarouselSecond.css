@@ -1,17 +1,13 @@
-
 body {
     font-family: "Adobe Arabic", Arial, sans-serif;
   }  
-  
-* {
-    box-sizing: border-box;
-}
 
 .containerS {
     background: rgb(245, 245, 245);
     padding: 10%;
     position: relative;
     z-index: -3;
+    height: 100vh;
 }
 
 .card-carouselS {
@@ -19,7 +15,6 @@ body {
     display: flex;
     flex-direction: column;
     height: 50vh;
-    margin: 10% auto;
     align-items: center;
     position: relative;
 }

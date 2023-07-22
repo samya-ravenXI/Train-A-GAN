@@ -7,7 +7,7 @@ import './Grid.css';
 function Grid() {
 
   const [formFields, setFormFields] = useState([
-    { data: 'mnist', type: 'gan', init: 'glorotNormal', ishape_h: 28, ishape_w: 28, ishape_d:1, reshape_h: 7, reshape_w: 7, reshape_d: 512, epoch: 5},
+    { data: 'mnist', type: 'gan', init: 'glorotNormal', ishape_h: 28, ishape_w: 28, ishape_d:1, reshape_h: 7, reshape_w: 7, reshape_d: 512, epoch: 5, images: '', labels: ''},
   ])
   const [formGenFields, setFormGenFields] = useState([
     { depth: 64, kernel_size: 3, stride: 1, padding: 'same', batch_normalisation: 'no', activation: 'relu', dropout: 0.2},
@@ -17,8 +17,44 @@ function Grid() {
   ])
 
   const handleFormChange = (event, index) => {
+    const value = event.target.value;
+    const upload = document.getElementById("upload");
+    if (value === 'Custom'){
+      showUpload();
+
+    }
+    else if (value === 'Mnist' || value === 'Fashion Mnist' || value === 'mist' ) {
+      hideUpload();
+    }
     let data = [...formFields];
     data[index][event.target.name] = event.target.value;
+    setFormFields(data);
+  }
+
+  const handleImagesFormChange = (event, index) => {
+
+    let data = [...formFields];
+    if (data[0].data === 'Custom'){
+      data[index][event.target.name] = event.target.files[0];
+    }
+    else if (data[0].data === 'Mnist' | data[0].data === 'Fashion Mnist' | data[0].data === 'mist' ) {
+      data[index][event.target.name] = '';
+    }
+    data[index][event.target.name] = event.target.files[0];
+    setFormFields(data);
+  }
+  
+  const handleLabelsFormChange = (event, index) => {
+
+    const value = event.target.value;
+    let data = [...formFields];
+    if (data[0].data === 'Custom'){
+      data[index][event.target.name] = event.target.files[0];
+    }
+    else if (data[0].data === 'Mnist' | data[0].data === 'Fashion Mnist' | data[0].data === 'mist' ) {
+      data[index][event.target.name] = '';
+    }
+    data[index][event.target.name] = event.target.files[0];
     setFormFields(data);
   }
 
@@ -27,10 +63,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Epoch should be between [1, 100]! Any value outside the boundary will be clipped between [1, 100].');
+        showCustomAlert('Epoch should be between [1, 100]!');
         newValue = 1;
     } else if (newValue > 100) {
-        alert('Epoch should be between [1, 100]! Any value outside the boundary will be clipped between [1, 100].');
+        showCustomAlert('Epoch should be between [1, 100]!');
         newValue = 100;
     }
     let data = [...formFields];
@@ -43,11 +79,11 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Input Shape Height should be between [1, 64]! Any value outside the boundary will be clipped between [1, 64].');
+        showCustomAlert('Input Shape Height should be between [1, 128]!');
         newValue = 1;
-    } else if (newValue > 64) {
-        alert('Input Shape Height should be between [1, 64]! Any value outside the boundary will be clipped between [1, 64].');
-        newValue = 64;
+    } else if (newValue > 128) {
+        showCustomAlert('Input Shape Height should be between [1, 128]!');
+        newValue = 128;
     }
     let data = [...formFields];
     data[index][event.target.name] = newValue;
@@ -59,11 +95,11 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Input Shape Width should be between [1, 64]! Any value outside the boundary will be clipped between [1, 64].');
+        showCustomAlert('Input Shape Width should be between [1, 128]!');
         newValue = 1;
-    } else if (newValue > 64) {
-        alert('Input Shape Width should be between [1, 64]! Any value outside the boundary will be clipped between [1, 64].');
-        newValue = 64;
+    } else if (newValue > 128) {
+        showCustomAlert('Input Shape Width should be between [1, 128]!');
+        newValue = 128;
     }
     let data = [...formFields];
     data[index][event.target.name] = newValue;
@@ -75,10 +111,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Input Shape Depth should be between [1, 15]! Any value outside the boundary will be clipped between [1, 15].');
+        showCustomAlert('Input Shape Depth should be between [1, 15]!');
         newValue = 1;
     } else if (newValue > 15) {
-        alert('Input Shape Depth should be between [1, 15]! Any value outside the boundary will be clipped between [1, 15].');
+        showCustomAlert('Input Shape Depth should be between [1, 15]!');
         newValue = 15;
     }
     let data = [...formFields];
@@ -91,10 +127,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Reshape Height should be between [1, 64]! Any value outside the boundary will be clipped between [1, 64].');
+        showCustomAlert('Reshape Height should be between [1, 64]!');
         newValue = 1;
     } else if (newValue > 64) {
-        alert('Reshape Height should be between [1, 64]! Any value outside the boundary will be clipped between [1, 64].');
+        showCustomAlert('Reshape Height should be between [1, 64]!');
         newValue = 64;
     }
     let data = [...formFields];
@@ -107,10 +143,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Reshape Width should be between [1, 64]! Any value outside the boundary will be clipped between [1, 64].');
+        showCustomAlert('Reshape Width should be between [1, 64]!');
         newValue = 1;
     } else if (newValue > 64) {
-        alert('Reshape Width should be between [1, 64]! Any value outside the boundary will be clipped between [1, 64].');
+        showCustomAlert('Reshape Width should be between [1, 64]!');
         newValue = 64;
     }
     let data = [...formFields];
@@ -123,10 +159,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Reshape Depth should be between [1, 512]! Any value outside the boundary will be clipped between [1, 512].');
+        showCustomAlert('Reshape Depth should be between [1, 512]!');
         newValue = 1;
     } else if (newValue > 512) {
-        alert('Reshape Depth should be between [1, 512]! Any value outside the boundary will be clipped between [1, 512].');
+        showCustomAlert('Reshape Depth should be between [1, 512]!');
         newValue = 512;
     }
     let data = [...formFields];
@@ -145,10 +181,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Depth should be between [1, 512]! Any value outside the boundary will be clipped between [1, 512].');
+        showCustomAlert('Depth should be between [1, 512]!');
         newValue = 1;
     } else if (newValue > 512) {
-        alert('Depth should be between [1, 512]! Any value outside the boundary will be clipped between [1, 512].');
+        showCustomAlert('Depth should be between [1, 512]!');
         newValue = 512;
     }
     let data = [...formGenFields];
@@ -161,10 +197,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Kernel Size should be between [1, 15]! Any value outside the boundary will be clipped between [1, 15].');
+        showCustomAlert('Kernel Size should be between [1, 15]!');
         newValue = 1;
     } else if (newValue > 15) {
-        alert('Kernel Size should be between [1, 15]! Any value outside the boundary will be clipped between [1, 15].');
+        showCustomAlert('Kernel Size should be between [1, 15]!');
         newValue = 15;
     }
     let data = [...formGenFields];
@@ -177,10 +213,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Stride should be between [1, 10]! Any value outside the boundary will be clipped between [1, 10].');
+        showCustomAlert('Stride should be between [1, 10]!');
         newValue = 1;
     } else if (newValue > 10) {
-        alert('Stride should be between [1, 10]! Any value outside the boundary will be clipped between [1, 10].');
+        showCustomAlert('Stride should be between [1, 10]!');
         newValue = 10;
     }
     let data = [...formGenFields];
@@ -193,10 +229,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = parseFloat(value);
     if (newValue < 0) {
-        alert('Dropout should be between [0, 1]! Any value outside the boundary will be clipped between [0, 1].');
+        showCustomAlert('Dropout should be between [0, 1]!');
         newValue = 0;
     } else if (newValue > 1) {
-        alert('Dropout should be between [0, 1]! Any value outside the boundary will be clipped between [0, 1].');
+        showCustomAlert('Dropout should be between [0, 1]!');
         newValue = 1;
     }
     let data = [...formGenFields];
@@ -216,10 +252,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Depth should be between [1, 512]! Any value outside the boundary will be clipped between [1, 512].');
+        showCustomAlert('Depth should be between [1, 512]!');
         newValue = 1;
     } else if (newValue > 512) {
-        alert('Depth should be between [1, 512]! Any value outside the boundary will be clipped between [1, 512].');
+        showCustomAlert('Depth should be between [1, 512]!');
         newValue = 512;
     }
     let data = [...formDisFields];
@@ -232,10 +268,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Kernel Size should be between [1, 15]! Any value outside the boundary will be clipped between [1, 15].');
+        showCustomAlert('Kernel Size should be between [1, 15]!');
         newValue = 1;
     } else if (newValue > 15) {
-        alert('Kernel Size should be between [1, 15]! Any value outside the boundary will be clipped between [1, 15].');
+        showCustomAlert('Kernel Size should be between [1, 15]!');
         newValue = 15;
     }
     let data = [...formDisFields];
@@ -248,10 +284,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Stride should be between [1, 10]! Any value outside the boundary will be clipped between [1, 10].');
+        showCustomAlert('Stride should be between [1, 10]!');
         newValue = 1;
     } else if (newValue > 10) {
-        alert('Stride should be between [1, 10]! Any value outside the boundary will be clipped between [1, 10].');
+        showCustomAlert('Stride should be between [1, 10]!');
         newValue = 10;
     }
     let data = [...formDisFields];
@@ -264,10 +300,10 @@ function Grid() {
     const value = event.target.value;
     let newValue = parseFloat(value);
     if (newValue < 0) {
-        alert('Dropout should be between [0, 1]! Any value outside the boundary will be clipped between [0, 1].');
+        showCustomAlert('Dropout should be between [0, 1]!');
         newValue = 0;
     } else if (newValue > 1) {
-        alert('Dropout should be between [0, 1]! Any value outside the boundary will be clipped between [0, 1].');
+        showCustomAlert('Dropout should be between [0, 1]!');
         newValue = 1;
     }
     let data = [...formDisFields];
@@ -321,30 +357,69 @@ function Grid() {
     data.splice(index, 1)
     setFormDisFields(data)
   }
+  
+  function showUpload(message) {
+    const upload = document.getElementById("upload");
+    upload.style.display = "block";
+    disableInputs(); 
+  }
+  
+  function hideUpload() {
+    const upload = document.getElementById("upload");
+    upload.style.display = "none";
+    enableInputs();
+  }
 
   let gan;
   let trainingDone = false;
   let startedTraining = false;
   const ep = document.getElementById('ep');
+  const dgen_div = document.getElementById('dgl');
+  const daux_div = document.getElementById('dal');
+  const gl_div = document.getElementById('gl');
 
   async function train() {
+    try {
+      ep.innerHTML = '';
+      dgen_div.innerHTML = '';
+      daux_div.innerHTML = '';
+      gl_div.innerHTML = '';
+    }
+    catch(e) {
+      
+    }
 
     const epochCount = formFields[0].epoch;
     gan = new GAN({Gen: formGenFields, Dis: formDisFields, Info: formFields});
     startedTraining = true;
     let currEpoch = 1;
-
-    await tf.setBackend("webgl");
-    await gan.setTrainingData(formFields[0].data);
-
-    while (currEpoch <= epochCount) {
-      await gan.train();
-      await generate();
-      console.log(`====== finished epoch ${currEpoch} ======`);
-      ep.innerText = `Epoch: ${currEpoch}/${epochCount}`;
-      currEpoch++;
+    console.log(formFields);
+    if(formFields[0].data === 'Custom' && (formFields[0].images === '' || formFields[0].labels === '')) {
+      showCustomAlert('Please upload the data files first!');
     }
-    trainingDone = true;
+    else{
+
+      await tf.setBackend("webgl");
+      await gan.setTrainingData(formFields[0].data, formFields[0].images, formFields[0].labels);
+
+      // while (currEpoch <= epochCount) {
+      //   try {
+      //     await gan.train();
+      //     await generate();
+      //     console.log(`====== Finished Epoch ${currEpoch} ======`);
+      //     const ep_new = document.createElement('div');
+      //     ep_new.textContent = currEpoch.toString();
+      //     ep.appendChild(ep_new);
+      //     currEpoch++;
+      //   } catch (error) {
+      //     showCustomAlert('Please recheck the entered values. Check console for details.');
+      //     console.log(error);
+      //     break;
+      //   }
+      
+      // }
+      trainingDone = true;
+    }
   }
 
   async function generate() {
@@ -362,7 +437,7 @@ function Grid() {
 
   async function download() {
     if(!trainingDone) {
-      return alert("You need to start training first! Click the 'Start Training' button.");
+      return showCustomAlert("You need to start training first! Click the 'Start Training' button.");
     }
     await gan.download();
   }
@@ -373,16 +448,71 @@ function Grid() {
     sc.downloadTextFile();
   }
 
+  function disableInputs() {
+    // Disable all input, select, and button elements
+    const inputs = document.querySelectorAll("input:not(#upload-images, #upload-labels), select, button:not(#grid-alert-button, #upload-button)");
+    inputs.forEach((input) => {
+      input.disabled = true;
+    });
+  }
+  
+  function enableInputs() {
+    // Enable all input, select, and button elements
+    const inputs = document.querySelectorAll("input, select, button");
+    inputs.forEach((input) => {
+      input.disabled = false;
+    });
+  }
+
+  function showCustomAlert(message) {
+    const customAlert = document.getElementById("grid-alert");
+    const alertMessage = document.getElementById("grid-alert-msg");
+  
+    alertMessage.textContent = message;
+    customAlert.style.display = "block";
+    disableInputs(); 
+  }
+  
+  function hideCustomAlert() {
+    const customAlert = document.getElementById("grid-alert");
+    customAlert.style.display = "none";
+    enableInputs();
+  }
+
   return (
     <div className="Grid">
+      <div className="custom-alert" id="grid-alert">
+        <div className="grid-alert-content">
+          <p id="grid-alert-msg"></p>
+          <button id="grid-alert-button" onClick={hideCustomAlert}>Confirm</button>
+        </div>
+      </div>
+      <form onSubmit={submit}>
+        {formFields.map((form, index) => {
+          return (
+            <div id="upload" key={index}>
+              <div id="upload-mat">
+                <div id="upload-files">
+                  <h3>Images</h3>
+                  <h3>Labels</h3>
+                  <input name="images" type="file" id="upload-images" onChange={event => handleImagesFormChange(event, index)}/>
+                  <input name="labels" type="file" id="upload-labels" onChange={event => handleLabelsFormChange(event, index)}/>
+                </div>
+                <button id="upload-button" onClick={hideUpload}>Confirm</button>
+              </div>
+            </div>
+          )
+        })}
+      </form>
+      <h1>Train</h1>
       <form onSubmit={submit}>
         {formFields.map((form, index) => {
           return (
             <div className='info' key={index}>
-                <p className='info-head'>Dataset</p>
-                <p className='info-head'>GAN Type</p>
+                <h3>Dataset</h3>
+                <h3>GAN Type</h3>
                 <select
-                    aria-label="label for the select"
+                    aria-label="h3 for the select"
                     name='data'
                     placeholder='Dataset'
                     onChange={event => handleFormChange(event, index)}
@@ -393,7 +523,7 @@ function Grid() {
                     <option>Fashion Mnist</option>
                 </select>
                 <select
-                    aria-label="label for the select"
+                    aria-label="h3 for the select"
                     name='type'
                     placeholder='Type'
                     onChange={event => handleFormChange(event, index)}
@@ -405,10 +535,10 @@ function Grid() {
                     <option>Auxiliary Classifier GAN</option>
                 </select>
                 <div>
-                  <label>
-                    Epoch
+                <div className='inf'>
+                  <h3>Epoch</h3>
                   <input
-                      className = 'e'
+                      id = 'e'
                       type='number'
                       min='1'
                       max='100'
@@ -417,80 +547,87 @@ function Grid() {
                       onChange={event => handleFormEpochChange(event, index)}
                       value={form.epoch}
                   />
-                  </label>
+                </div>
+                <div className='inf'>
+                  <h3>Initiliazer</h3>
                   <select
-                      className= 'e'
-                      aria-label="label for the select"
-                      name='init'
-                      placeholder='Init'
-                      onChange={event => handleFormChange(event, index)}
-                      value={form.init}
-                  >
-                      <option>heNormal</option>
-                      <option>randomNormal</option>
-                      <option>glorotNormal</option>
+                    id = 'init'
+                    aria-label="h3 for the select"
+                    name='init'
+                    placeholder='Init'
+                    onChange={event => handleFormChange(event, index)}
+                    value={form.init}
+                >
+                    <option>heNormal</option>
+                    <option>randomNormal</option>
+                    <option>glorotNormal</option>
                   </select>
                 </div>
+                </div>
                 <div className='shape'>
-                    <p className='shape-head'>Input Shape</p>
-                    <div className='ishape'>
-                        <input
-                          type='number'
-                          min='1'
-                          max='64'
-                          name='ishape_h'
-                          placeholder='H'
-                          onChange={event => handleFormInputShapeHChange(event, index)}
-                          value={form.ishape_h}
-                        />
-                        <input
-                          type='number'
-                          min='1'
-                          max='64'
-                          name='ishape_w'
-                          placeholder='W'
-                          onChange={event => handleFormInputShapeWChange(event, index)}
-                          value={form.ishape_w}
-                        />
-                        <input
-                          type='number'
-                          min='1'
-                          max='15'
-                          name='ishape_d'
-                          placeholder='D'
-                          onChange={event => handleFormInputShapeDChange(event, index)}
-                          value={form.ishape_d}
-                        />
+                    <div>
+                      <h3>Input Shape</h3>
+                      <div className='ishape'>
+                          <input
+                            type='number'
+                            min='1'
+                            max='64'
+                            name='ishape_h'
+                            placeholder='H'
+                            onChange={event => handleFormInputShapeHChange(event, index)}
+                            value={form.ishape_h}
+                          />
+                          <input
+                            type='number'
+                            min='1'
+                            max='64'
+                            name='ishape_w'
+                            placeholder='W'
+                            onChange={event => handleFormInputShapeWChange(event, index)}
+                            value={form.ishape_w}
+                          />
+                          <input
+                            type='number'
+                            min='1'
+                            max='15'
+                            name='ishape_d'
+                            placeholder='D'
+                            onChange={event => handleFormInputShapeDChange(event, index)}
+                            value={form.ishape_d}
+                          />
+                      </div>
                     </div>
-                    <p className='shape-head'>Reshape Dense Shape</p>
-                    <div className='reshape'>
-                        <input
-                          type='number'
-                          min='1'
-                          max='64'
-                          name='reshape_h'
-                          placeholder='H'
-                          onChange={event => handleFormReshapeHChange(event, index)}
-                          value={form.reshape_h}
-                        />
-                        <input
-                          type='number'
-                          min='1'
-                          max='64'
-                          name='reshape_w'
-                          placeholder='W'
-                          onChange={event => handleFormReshapeWChange(event, index)}
-                          value={form.reshape_w}
-                        />
-                        <input
-                          type='number'
-                          min='1'
-                          max='512'
-                          name='reshape_d'
-                          placeholder='D'
-                          onChange={event => handleFormReshapeDChange(event, index)}
-                          value={form.reshape_d}
-                        />
+                    <div>
+                      <h3>Reshape Dense Shape</h3>
+                      <div className='reshape'>
+                          <input
+                            type='number'
+                            min='1'
+                            max='64'
+                            name='reshape_h'
+                            placeholder='H'
+                            onChange={event => handleFormReshapeHChange(event, index)}
+                            value={form.reshape_h}
+                          />
+                          <input
+                            type='number'
+                            min='1'
+                            max='64'
+                            name='reshape_w'
+                            placeholder='W'
+                            onChange={event => handleFormReshapeWChange(event, index)}
+                            value={form.reshape_w}
+                          />
+                          <input
+                            type='number'
+                            min='1'
+                            max='512'
+                            name='reshape_d'
+                            placeholder='D'
+                            onChange={event => handleFormReshapeDChange(event, index)}
+                            value={form.reshape_d}
+                          />
+                      </div>
                     </div>
                 </div>
             </div>
@@ -498,14 +635,14 @@ function Grid() {
         })}
       </form>
       <div className="gen">
-      <div className="head">
-        <div className="heading">Depth</div>
-        <div className="heading">Kernel</div>
-        <div className="heading">Stride</div>
-        <div className="heading">Padding</div>
-        <div className="heading">Batch Normalisation</div>
-        <div className="heading">Activation</div>
-        <div className="heading">Dropout</div>
+      <div className="head header">
+        <h3>Depth</h3>
+        <h3>Kernel</h3>
+        <h3>Stride</h3>
+        <h3>Padding</h3>
+        <h3>BatchNorm</h3>
+        <h3>Activation</h3>
+        <h3>Dropout</h3>
       </div>
         <form onSubmit={submit}>
         {formGenFields.map((form, index) => {
@@ -534,7 +671,7 @@ function Grid() {
                 value={form.stride}
               />
               <select
-                aria-label="label for the select"
+                aria-label="h3 for the select"
                 name='padding'
                 placeholder='Padding'
                 onChange={event => handleFormGenChange(event, index)}
@@ -544,7 +681,7 @@ function Grid() {
                 <option>Valid</option>
               </select>
               <select
-                aria-label="label for the select"
+                aria-label="h3 for the select"
                 name='batch_normalisation'
                 placeholder='Batch Normalisation'
                 onChange={event => handleFormGenChange(event, index)}
@@ -554,7 +691,7 @@ function Grid() {
                 <option>Yes</option>
               </select>
               <select
-                aria-label="label for the select"
+                aria-label="h3 for the select"
                 name='activation'
                 placeholder='Activation'
                 onChange={event => handleFormGenChange(event, index)}
@@ -606,7 +743,7 @@ function Grid() {
                     value={form.stride}
                 />
                 <select
-                    aria-label="label for the select"
+                    aria-label="h3 for the select"
                     name='padding'
                     placeholder='Padding'
                     onChange={event => handleFormDisChange(event, index)}
@@ -616,7 +753,7 @@ function Grid() {
                     <option>Valid</option>
                 </select>
                 <select
-                    aria-label="label for the select"
+                    aria-label="h3 for the select"
                     name='batch_normalisation'
                     placeholder='Batch Normalisation'
                     onChange={event => handleFormDisChange(event, index)}
@@ -626,7 +763,7 @@ function Grid() {
                     <option>Yes</option>
                 </select>
                 <select
-                    aria-label="label for the select"
+                    aria-label="h3 for the select"
                     name='activation'
                     placeholder='Activation'
                     onChange={event => handleFormDisChange(event, index)}
@@ -650,17 +787,23 @@ function Grid() {
         </form>
         <button className='add' onClick={addDisFields}>+</button>
       </div>
-      <button id='scriptBtn' className='sub' onClick={script}>Download Script</button>
-      <button id='trainBtn' className='sub' onClick={train}>Start Training</button>
-      <button id='downBtn' className='sub' onClick={download}>Download Model</button>
+      <div className='buttons'>
+        <button id='scriptBtn' className='sub' onClick={script}>Download Script</button>
+        <button id='trainBtn' className='sub' onClick={train}>Start Training</button>
+        <button id='downBtn' className='sub' onClick={download}>Download Model</button>
+      </div>
+      <div className='line'></div>
+      <h1>History</h1>
       <div id='output'>
-        <div id='loop'>
+        <div id='losses'>
+          <h3>Epoch</h3>
+          <h3>Discriminator Generation Loss</h3>
+          <h3>Discriminator Auxiliary Loss</h3>
+          <h3>Generator Generation Loss</h3>
           <div id="ep"></div>
-          <div id='losses'>
-            <div id="dgl"></div>
-            <div id="dal"></div>
-            <div id="gl"></div>
-          </div>
+          <div id="dgl"></div>
+          <div id="dal"></div>
+          <div id="gl"></div>
         </div>
         <div id='samples'></div>
       </div>

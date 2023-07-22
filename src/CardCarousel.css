@@ -12,6 +12,7 @@ body {
     padding: 10%;
     position: relative;
     z-index: -3;
+    height: 100vh;
 }
 
 .card-carousel {
@@ -19,7 +20,6 @@ body {
     display: flex;
     flex-direction: column;
     height: 50vh;
-    margin: 10% auto;
     align-items: center;
     position: relative;
 }

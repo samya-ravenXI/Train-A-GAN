@@ -26,7 +26,6 @@ const cardItems = [
   }
 ];
 
-
 function determineClasses(indexes, cardIndex) {
   if (indexes.currentIndex === cardIndex) {
     return "active";
@@ -68,6 +67,9 @@ const CardCarousel = () => {
     const transitionInterval = setInterval(() => {
       handleCardTransition();
     }, 4000);
+    const handleClick = () => {
+      handleCardTransition();
+    };
 
     return () => clearInterval(transitionInterval);
   }, [handleCardTransition, indexes]);
