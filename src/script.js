@@ -42,13 +42,29 @@ from keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv2DTranspose
         element.click();
     }
     
-    async conv2DBlock(inp, depth, k_size, stride, pad, init, act, bn, drop) {
+    async conv2DBlock(inp, depth, k_size, stride, pad, init, act, bn, drop, type) {
         if (inp === false) {
             this.statement = this.statement + `\tfe = Conv2D(${depth}, (${k_size}, ${k_size}), strides=(${stride}, ${stride}), padding='${pad}', kernel_initializer=${init})(fe)\n`;
         }
         else {
-            this.statement = this.statement + `\tin_image = Input(shape=in_shape)\n`
-            this.statement = this.statement + `\tfe = Conv2D(${depth}, (${k_size}, ${k_size}), strides=(${stride}, ${stride}), padding='${pad}', kernel_initializer=${init})(in_image)\n`;
+            if (type === 'Conditional GAN'){
+                this.statement = this.statement + `\t# label input
+\tin_label = Input(shape=(1,))
+\tli = Embedding(n_classes, 50)(in_label)
+\tn_nodes = in_shape[0] * in_shape[1]
+\tli = Dense(n_nodes)(li)
+\tli = Reshape((in_shape[0], in_shape[1], 1))(li)
+\t# image input
+\tin_image = Input(shape=in_shape)
+\tmerge = Concatenate()([in_image, li])
+`
+                this.statement = this.statement + `\tfe = Conv2D(${depth}, (${k_size}, ${k_size}), strides=(${stride}, ${stride}), padding='${pad}', kernel_initializer=${init})(merge)\n`;
+        
+            }
+            else {
+                this.statement = this.statement + `\tin_image = Input(shape=in_shape)\n`
+                this.statement = this.statement + `\tfe = Conv2D(${depth}, (${k_size}, ${k_size}), strides=(${stride}, ${stride}), padding='${pad}', kernel_initializer=${init})(in_image)\n`
+            };
         }
         if (bn.toLowerCase() === 'yes') {
             this.statement = this.statement + `\tfe = BatchNormalization()(fe)\n`;
@@ -112,7 +128,7 @@ from keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv2DTranspose
             const layer = Dis[key];
             if (key == 0) {
                 // First convolution layer
-                this.conv2DBlock(true, layer.depth, layer.kernel_size, layer.stride, layer.padding, init, layer.activation.toLowerCase(), layer.batch_normalisation, layer.dropout);
+                this.conv2DBlock(true, layer.depth, layer.kernel_size, layer.stride, layer.padding, init, layer.activation.toLowerCase(), layer.batch_normalisation, layer.dropout, info.type);
             }
             else {
                 this.conv2DBlock(false, layer.depth, layer.kernel_size, layer.stride, layer.padding, init, layer.activation.toLowerCase(), layer.batch_normalisation, layer.dropout);
@@ -129,6 +145,15 @@ from keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv2DTranspose
 \tmodel = Model(in_image, [out1, out2])
 \topt = Adam(learning_rate=0.0002, beta_1=0.5)
 \tmodel.compile(loss=['binary_crossentropy', 'sparse_categorical_crossentropy'], optimizer=opt)
+\treturn model\n\n`;
+        }
+
+        else if (info.type === "Conditional GAN") {
+            this.statement = this.statement + `\t# real/fake output
+\tout1 = Dense(1, activation='sigmoid')(fe)\n
+\tmodel = Model([in_image, in_label], out1)
+\topt = Adam(learning_rate=0.0002, beta_1=0.5)
+\tmodel.compile(loss=['binary_crossentropy'], optimizer=opt)
 \treturn model\n\n`;
         }
     
@@ -216,7 +241,7 @@ from keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv2DTranspose
 
         const info = Info[0];
         this.statement = this.statement + `def define_gan(g_model, d_model):\n`;
-        if (info.type === "GAN" || info.type === 'gan' || info.type === "Conditional GAN") {
+        if (info.type === "GAN" || info.type === 'gan') {
             this.statement = this.statement + `\t# make weights in the discriminator not trainable
 \tfor layer in d_model.layers:
 \t\tif not isinstance(layer, BatchNormalization):
@@ -230,6 +255,21 @@ from keras.layers import Input, Dense, Reshape, Flatten, Conv2D, Conv2DTranspose
 \tmodel.compile(loss=['binary_crossentropy'], optimizer=opt)
 \treturn model\n\n`;
             }
+        else if (info.type === "Conditional GAN") {
+            this.statement = this.statement + `\t# make weights in the discriminator not trainable
+\tfor layer in d_model.layers:
+\t\tif not isinstance(layer, BatchNormalization):
+\t\t\tlayer.trainable = False
+\tgen_noise, gen_label = g_model.input
+\t# connect the outputs of the generator to the inputs of the discriminator
+\tgan_output = d_model([g_model.output, gen_label])
+\t# define gan model as taking noise and label and outputting real/fake and label outputs
+\tmodel = Model(g_model.input, gan_output)
+\t# compile model
+\topt = Adam(learning_rate=0.0002, beta_1=0.5)
+\tmodel.compile(loss=['binary_crossentropy'], optimizer=opt)
+\treturn model\n\n`;
+        }
         else {
         this.statement = this.statement + `\t# make weights in the discriminator not trainable
 \tfor layer in d_model.layers:
@@ -362,11 +402,11 @@ def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=${info.epoc
         else if (info.type === 'Conditional GAN') {
             this.statement = this.statement + `\t\t[X_real, labels_real], y_real = generate_real_samples(dataset, half_batch)
 \t\t# update discriminator model weights
-\t\td_r1 = d_model.train_on_batch(X_real, y_real)
+\t\td_r1 = d_model.train_on_batch([X_real, labels_real], y_real)
 \t\t# generate 'fake' examples
 \t\t[X_fake, labels_fake], y_fake = generate_fake_samples(g_model, latent_dim, half_batch)
 \t\t# update discriminator model weights
-\t\td_f1 = d_model.train_on_batch(X_fake, y_fake)
+\t\td_f1 = d_model.train_on_batch([X_fake, labels_fake], y_fake)
 \t\t# prepare points in latent space as input for the generator
 \t\t[z_input, z_labels] = generate_latent_points(latent_dim, n_batch)
 \t\t# create inverted labels for the fake samples
@@ -422,12 +462,12 @@ latent_dim = 100
 
 # create the discriminator
 discriminator = define_discriminator()
-# Plot the model
+# plot the model
 plot_model(discriminator, to_file='discriminator.png', show_shapes=True)
 
 # create the generator
 generator = define_generator(latent_dim)
-# Plot the model
+# plot the model
 plot_model(generator, to_file='generator.png', show_shapes=True)
 
 # create the gan

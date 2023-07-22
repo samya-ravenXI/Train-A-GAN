@@ -393,7 +393,6 @@ function Grid() {
     gan = new GAN({Gen: formGenFields, Dis: formDisFields, Info: formFields});
     startedTraining = true;
     let currEpoch = 1;
-    console.log(formFields);
     if(formFields[0].data === 'Custom' && (formFields[0].images === '' || formFields[0].labels === '')) {
       showCustomAlert('Please upload the data files first!');
     }
@@ -402,22 +401,22 @@ function Grid() {
       await tf.setBackend("webgl");
       await gan.setTrainingData(formFields[0].data, formFields[0].images, formFields[0].labels);
 
-      // while (currEpoch <= epochCount) {
-      //   try {
-      //     await gan.train();
-      //     await generate();
-      //     console.log(`====== Finished Epoch ${currEpoch} ======`);
-      //     const ep_new = document.createElement('div');
-      //     ep_new.textContent = currEpoch.toString();
-      //     ep.appendChild(ep_new);
-      //     currEpoch++;
-      //   } catch (error) {
-      //     showCustomAlert('Please recheck the entered values. Check console for details.');
-      //     console.log(error);
-      //     break;
-      //   }
+      while (currEpoch <= epochCount) {
+        try {
+          await gan.train();
+          await generate();
+          console.log(`====== Finished Epoch ${currEpoch} ======`);
+          const ep_new = document.createElement('div');
+          ep_new.textContent = currEpoch.toString();
+          ep.appendChild(ep_new);
+          currEpoch++;
+        } catch (error) {
+          showCustomAlert('Please recheck the entered values. Check console for details.');
+          console.log(error);
+          break;
+        }
       
-      // }
+      }
       trainingDone = true;
     }
   }

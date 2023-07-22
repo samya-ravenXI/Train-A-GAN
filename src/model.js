@@ -46,7 +46,6 @@ export default class GAN {
         let data = await getData(i, l);
         images = data.images;
         labels = data.labels;
-        console.log(images.shape, labels.shape);
       }
       
       if (images.shape[1] !== images.shape[2]) throw new Error("Images must be square.");
@@ -163,10 +162,24 @@ export default class GAN {
       }
 
       cnn.add(tf.layers.flatten());
-  
-      const image = tf.input({shape: [this.imageSize, this.imageSize, 1]});
-      const features = cnn.apply(image);
-  
+
+      let features;
+      const image = tf.input({shape: [info.ishape_h, info.ishape_w, info.ishape_d]});
+      const imageClass = tf.input({shape: [1]});
+      if (info.type === "Conditional GAN") {    
+        // The desired label is converted to a vector of length `latentSize` through embedding lookup.
+        const classEmbedding = tf.layers.embedding({inputDim: this.numClasses, outputDim: 100, embeddingsInitializer: info.init}).apply(imageClass);
+        const deClassEmbedding = tf.layers.dense({units: info.ishape_h * info.ishape_w * info.ishape_d, activation: 'relu'}).apply(classEmbedding);
+        const reClassEmbedding = tf.layers.reshape({targetShape: [info.ishape_h, info.ishape_w, info.ishape_d]}).apply(deClassEmbedding);
+        // Hadamard product between z-space and a class conditional embedding.
+        const h = tf.layers.multiply().apply([image, reClassEmbedding]);
+    
+        features = cnn.apply(h);
+      }
+
+      else {
+        features = cnn.apply(image);
+      }
       const realnessScore = tf.layers.dense({units: 1, activation: 'sigmoid'}).apply(features);
 
       if (info.type === "Semi-Supervised GAN" || info.type === "Auxiliary Classifier GAN") {
@@ -182,7 +195,18 @@ export default class GAN {
         });
         return discriminator;
       }
+      
+      else if (info.type === "Conditional GAN") {
+        console.log('ok');
+        let discriminator = tf.model({inputs: [image, imageClass], outputs: realnessScore});
   
+        discriminator.compile({
+          optimizer: tf.train.adam(this.learningRate, this.adamBeta1),
+          loss: ['binaryCrossentropy']
+        });
+        return discriminator;
+      }
+
       else {
         let discriminator = tf.model({inputs: image, outputs: realnessScore});
   
@@ -213,6 +237,9 @@ export default class GAN {
 
       if (info.type === "Semi-Supervised GAN" || info.type === "Auxiliary Classifier GAN") {
         [fakeImage, aux] = discriminator.apply(fakeImage);
+      }
+      else if (info.type === "Conditional GAN") {
+        fakeImage = discriminator.apply([fakeImage, imageClass]);
       }
       else {
         fakeImage = discriminator.apply(fakeImage);
@@ -264,6 +291,7 @@ export default class GAN {
     async trainCombinedModelOneStep(batchSize) {
   
       const zVectors = tf.randomUniform([batchSize, this.latentSize], -1, 1); // <-- noise
+
       const trick = tf.ones([batchSize, 1]).mul(this.softOne);
   
       const losses = await this.combinedModel.trainOnBatch([zVectors], [trick]);
@@ -272,9 +300,10 @@ export default class GAN {
   
     }
 
-    async trainCDiscriminatorOneStep(xTrain, batchStart, batchSize) {
+    async trainCDiscriminatorOneStep(xTrain, yTrain, batchStart, batchSize) {
   
       const imageBatch = xTrain.slice(batchStart, batchSize);
+      const labelBatch = yTrain.slice(batchStart, batchSize).asType('float32');
   
       let zVectors = tf.randomUniform([batchSize, this.latentSize], -1, 1);
       let sampledLabels = tf.randomUniform([batchSize, 1], 0, this.numClasses, 'int32').asType('float32');
@@ -286,9 +315,10 @@ export default class GAN {
       const y = tf.tidy(() => {
         return tf.concat([tf.ones([batchSize, 1]).mul(this.softOne), tf.zeros([batchSize, 1])]);
       });
+      const auxY = tf.concat([labelBatch, sampledLabels], 0);
   
-      const losses = await this.discriminator.trainOnBatch(x, [y]);
-      tf.dispose([x, y]);
+      const losses = await this.discriminator.trainOnBatch([x, auxY], [y]);
+      tf.dispose([x, y,  auxY]);
       return losses;
   
     }
@@ -397,7 +427,7 @@ export default class GAN {
           console.log(`batch ${batch + 1}/${numBatches}: dLoss = ${dLoss.toFixed(6)}, gLoss = ${gLoss.toFixed(6)}`);
         }
         else if (info.type === "Conditional GAN") {
-          const dLoss = await this.trainCDiscriminatorOneStep(this.xTrain, batch * this.batchSize, actualBatchSize);
+          const dLoss = await this.trainCDiscriminatorOneStep(this.xTrain, this.yTrain, batch * this.batchSize, actualBatchSize);
           const gLoss = await this.trainCCombinedModelOneStep(2 * actualBatchSize);
           dgl = dLoss.toFixed(6);
           gl = gLoss.toFixed(6);
