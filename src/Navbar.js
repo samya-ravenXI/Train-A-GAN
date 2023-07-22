@@ -30,9 +30,7 @@ function Navbar() {
 
             <ul className="navbar-menu">
                 <div className="dropdown">
-                    <button className="dropbtn">Resources
-                        <i className="fa fa-caret-down"></i>
-                    </button>
+                    <button className="dropbtn">Resources</button>
                     <div className="dropdown-content">
                         <a href="#" target="_blank">GAN</a>
                         <a href="#" target="_blank">Conditional GAN</a>
@@ -42,9 +40,7 @@ function Navbar() {
                 </div>
                 
                 <div className="dropdown">
-                    <button className="dropbtn">Source
-                        <i className="fa fa-caret-down"></i>
-                    </button>
+                    <button className="dropbtn">Source</button>
                     <div className="dropdown-content">
                         <a href="#" target="_blank">GAN</a>
                         <a href="#" target="_blank">Conditional GAN</a>
@@ -54,8 +50,19 @@ function Navbar() {
                         <a href="#" target="_blank">ACGAN MNIST TensorFlow Example</a>
                     </div>
                 </div>
-                
-                <a>About</a>
+
+                <div className="dropdown">
+                    <button className="dropbtn">About</button>
+                    <div className="github-card">
+                        {/* TODO: After making the repo public make this part dynamic using GitHub API */}
+                        <div className='header'>
+                            <a target="_blank" href="https://github.com/samya-ravenXI/Train-A-GAN">Train-A-GAN</a>
+                            <div className='pill'>Public</div>
+                        </div>
+
+                        <p className="description">Duis aliqua consequat ad eu officia dolore laborum laborum nulla eu ut laborum commodo incididunt nisi amet ut sed id incididunt ex veniam nisi dolor nostrud anim occaecat irure anim nisi aliquip voluptate fugiat enim aliquip tempor esse ullamco ad dolore esse laboris velit eu reprehenderit dolore id elit sint</p>
+                    </div>
+                </div>
             </ul>
         </nav>
     ); 
