@@ -28,12 +28,13 @@
     box-shadow: 5px 5px 25px #b6b6b650;
     width: 75%;
     height: 120%;
-    transition: all 1s ease-out;
     opacity: 0;
+    transition: all 0.7s ease-out;
     position: absolute;
     transform: scale(0.85) translateY(50px);
     left: 12.5%;
     cursor: pointer;
+    z-index: -1;
 }
 
 .card h2,
@@ -45,6 +46,13 @@
     visibility: hidden;
 }
 
+.card.prev {
+    transform: scale(1.1) translateY(-50px);
+    z-index: 2;
+    opacity: 0;
+    visibility: hidden;
+}
+
 .card.active {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -53,14 +61,7 @@
 }
 
 .card.next {
+    transition-delay: 0.2s;
     opacity: 1;
-    z-index: 0;
     height: 125%;
-}
-
-.card.prev {
-    transform: scale(1.1) translateY(-50px);
-    z-index: 2;
-    opacity: 0;
-    visibility: hidden;
 }
