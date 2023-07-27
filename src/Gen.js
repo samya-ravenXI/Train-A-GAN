@@ -13,10 +13,12 @@ function Gen() {
     const value = event.target.value;
     let newValue = Number(value);
     if (newValue < 1) {
-        alert('Total Classes should be between [1, 100]! Any value outside the boundary will be clipped between [1, 100].');
+        // alert('Total Classes should be between [1, 100]!');
+        showCustomAlert("Total Classes should be between [1, 100]!");
         newValue = 1;
     } else if (newValue > 100) {
-        alert('Total Classes should be between [1, 100]! Any value outside the boundary will be clipped between [1, 100].');
+        // alert('Total Classes should be between [1, 100]!');
+        showCustomAlert("Total Classes should be between [1, 100]!");
         newValue = 100;
     }
     let data = [...formFields];
@@ -29,17 +31,16 @@ function Gen() {
     console.log(formFields)
   }
 
-  async function gen() {
-    const generatorModel = await tf.loadLayersModel('./pretrained_model/model.json');
-    generatorModel.summary();
-    await generateAndDisplay(generatorModel);
-  }
+  // async function gen() {
+  //   const generatorModel = await tf.loadLayersModel('./pretrained_model/model.json');
+  //   await generateAndDisplay(generatorModel);
+  // }
 
   async function generateAndDisplay(generatorModel) {
     let canvas = document.createElement("canvas");
-    canvas.style.display = "block";
+    // canvas.style.display = "block";
     await generate(generatorModel, canvas)
-    const samples = document.getElementById("samples");
+    const samples = document.getElementById("gen-samples");
     samples.innerHTML = '';
     samples.appendChild(canvas);
   }
@@ -143,16 +144,67 @@ function Gen() {
   }
 }
 
+async function loadModel() {
+  const uploadJSONInput = document.getElementById('upload-json');
+  const uploadWeightsInput = document.getElementById('upload-weights');
+  try {
+    const model = await tf.loadLayersModel(tf.io.browserFiles(
+      [uploadJSONInput.files[0], uploadWeightsInput.files[0]]));
+    await generateAndDisplay(model);
+  }
+  catch (error){
+    showCustomAlert("Error! Please check whether the correct architecture and its weights have been provided. Check console for details.");
+    console.log(error);
+  }
+}
+
+function disableInputs() {
+  // Disable all input, select, and button elements
+  const inputs = document.querySelectorAll("input, select, button:not(#gen-alert-button)");
+  inputs.forEach((input) => {
+    input.disabled = true;
+  });
+}
+
+function enableInputs() {
+  // Enable all input, select, and button elements
+  const inputs = document.querySelectorAll("input, select, button");
+  inputs.forEach((input) => {
+    input.disabled = false;
+  });
+}
+
+function showCustomAlert(message) {
+  const customAlert = document.getElementById("gen-alert");
+  const alertMessage = document.getElementById("gen-alert-msg");
+
+  alertMessage.textContent = message;
+  customAlert.style.display = "block";
+  disableInputs(); 
+}
+
+function hideCustomAlert() {
+  const customAlert = document.getElementById("gen-alert");
+  customAlert.style.display = "none";
+  enableInputs();
+}
+
   return (
     <div className="Gen">
-      <div id='input'>
-        <form onSubmit={submit}>
-          {formFields.map((form, index) => {
-            return (
-              <div className='info' key={index}>
-                  <div>
-                    <label>
-                      <p>Total Classes</p>
+      <div className="custom-alert" id="gen-alert">
+        <div className="gen-alert-content">
+          <p id="gen-alert-msg"></p>
+          <button id="gen-alert-button" onClick={hideCustomAlert}>Confirm</button>
+        </div>
+      </div>
+      <h1>Generate</h1>
+      <div className="gen-container">
+        <div id='input'>
+          <form onSubmit={submit}>
+            {formFields.map((form, index) => {
+              return (
+                <div className='gen-info' key={index}>
+                    <h3>Total Classes</h3>
                     <input
                         className = 'c'
                         type='number'
@@ -163,15 +215,24 @@ function Gen() {
                         onChange={event => handleFormChange(event, index)}
                         value={form.classes}
                     />
-                    </label>
-                  </div>
-              </div>
-            )
-          })}
-        </form>
-        <button id='genBtn' className='sub' onClick={gen}>Generate Samples</button>
+                </div>
+              );
+            })}
+          </form>
+          <div className='files'>
+            <h3>Model Architecture</h3>
+            <h3>Model Weights</h3>
+            <input type="file" id="upload-json"/>
+            <input type="file" id="upload-weights"/>
+          </div>
+          <button id='genBtn' className='sub' onClick={loadModel}>Generate Samples</button>
+        </div>
+        <div id='sample-container'>
+          <div></div>
+          <div id='gen-samples'></div>
+          <div></div>
+        </div>
       </div>
-      <div id='samples'></div>
     </div>
   );
 }

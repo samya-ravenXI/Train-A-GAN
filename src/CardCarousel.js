@@ -27,7 +27,6 @@ const cardItems = [
   }
 ];
 
-
 function determineClasses(indexes, cardIndex) {
   if (indexes.currentIndex === cardIndex) {
     return "active";

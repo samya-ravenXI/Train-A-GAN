@@ -1,5 +1,4 @@
 import * as tf from '@tensorflow/tfjs';
-import Dataset from './data';
 
 export default class GAN {
 
@@ -26,19 +25,15 @@ export default class GAN {
       this.combinedModel = null;
     }
   
-    async setTrainingData(opts) {
+    async setTrainingData(opts, i, l) {
 
       let images, labels;
 
       if (opts === "Mnist" || opts === "mnist") {
         
         let data = await loadMnistData();
-        // let data = new Dataset();
-        // await data.loadData();
-        // data = data.getTrainData();
         images = data.images;
         labels = data.labels;
-        // console.log(images.shape);
       }
 
       else if (opts === "Fashion Mnist") {
@@ -48,8 +43,9 @@ export default class GAN {
       }
       
       else {
-        images = opts.images;
-        labels = opts.labels;
+        let data = await getData(i, l);
+        images = data.images;
+        labels = data.labels;
       }
       
       if (images.shape[1] !== images.shape[2]) throw new Error("Images must be square.");
@@ -166,10 +162,24 @@ export default class GAN {
       }
 
       cnn.add(tf.layers.flatten());
-  
-      const image = tf.input({shape: [this.imageSize, this.imageSize, 1]});
-      const features = cnn.apply(image);
-  
+
+      let features;
+      const image = tf.input({shape: [info.ishape_h, info.ishape_w, info.ishape_d]});
+      const imageClass = tf.input({shape: [1]});
+      if (info.type === "Conditional GAN") {    
+        // The desired label is converted to a vector of length `latentSize` through embedding lookup.
+        const classEmbedding = tf.layers.embedding({inputDim: this.numClasses, outputDim: 100, embeddingsInitializer: info.init}).apply(imageClass);
+        const deClassEmbedding = tf.layers.dense({units: info.ishape_h * info.ishape_w * info.ishape_d, activation: 'relu'}).apply(classEmbedding);
+        const reClassEmbedding = tf.layers.reshape({targetShape: [info.ishape_h, info.ishape_w, info.ishape_d]}).apply(deClassEmbedding);
+        // Hadamard product between z-space and a class conditional embedding.
+        const h = tf.layers.multiply().apply([image, reClassEmbedding]);
+    
+        features = cnn.apply(h);
+      }
+
+      else {
+        features = cnn.apply(image);
+      }
       const realnessScore = tf.layers.dense({units: 1, activation: 'sigmoid'}).apply(features);
 
       if (info.type === "Semi-Supervised GAN" || info.type === "Auxiliary Classifier GAN") {
@@ -185,7 +195,18 @@ export default class GAN {
         });
         return discriminator;
       }
+      
+      else if (info.type === "Conditional GAN") {
+        console.log('ok');
+        let discriminator = tf.model({inputs: [image, imageClass], outputs: realnessScore});
   
+        discriminator.compile({
+          optimizer: tf.train.adam(this.learningRate, this.adamBeta1),
+          loss: ['binaryCrossentropy']
+        });
+        return discriminator;
+      }
+
       else {
         let discriminator = tf.model({inputs: image, outputs: realnessScore});
   
@@ -216,6 +237,9 @@ export default class GAN {
 
       if (info.type === "Semi-Supervised GAN" || info.type === "Auxiliary Classifier GAN") {
         [fakeImage, aux] = discriminator.apply(fakeImage);
+      }
+      else if (info.type === "Conditional GAN") {
+        fakeImage = discriminator.apply([fakeImage, imageClass]);
       }
       else {
         fakeImage = discriminator.apply(fakeImage);
@@ -267,6 +291,7 @@ export default class GAN {
     async trainCombinedModelOneStep(batchSize) {
   
       const zVectors = tf.randomUniform([batchSize, this.latentSize], -1, 1); // <-- noise
+
       const trick = tf.ones([batchSize, 1]).mul(this.softOne);
   
       const losses = await this.combinedModel.trainOnBatch([zVectors], [trick]);
@@ -275,9 +300,10 @@ export default class GAN {
   
     }
 
-    async trainCDiscriminatorOneStep(xTrain, batchStart, batchSize) {
+    async trainCDiscriminatorOneStep(xTrain, yTrain, batchStart, batchSize) {
   
       const imageBatch = xTrain.slice(batchStart, batchSize);
+      const labelBatch = yTrain.slice(batchStart, batchSize).asType('float32');
   
       let zVectors = tf.randomUniform([batchSize, this.latentSize], -1, 1);
       let sampledLabels = tf.randomUniform([batchSize, 1], 0, this.numClasses, 'int32').asType('float32');
@@ -289,9 +315,10 @@ export default class GAN {
       const y = tf.tidy(() => {
         return tf.concat([tf.ones([batchSize, 1]).mul(this.softOne), tf.zeros([batchSize, 1])]);
       });
+      const auxY = tf.concat([labelBatch, sampledLabels], 0);
   
-      const losses = await this.discriminator.trainOnBatch(x, [y]);
-      tf.dispose([x, y]);
+      const losses = await this.discriminator.trainOnBatch([x, auxY], [y]);
+      tf.dispose([x, y,  auxY]);
       return losses;
   
     }
@@ -400,7 +427,7 @@ export default class GAN {
           console.log(`batch ${batch + 1}/${numBatches}: dLoss = ${dLoss.toFixed(6)}, gLoss = ${gLoss.toFixed(6)}`);
         }
         else if (info.type === "Conditional GAN") {
-          const dLoss = await this.trainCDiscriminatorOneStep(this.xTrain, batch * this.batchSize, actualBatchSize);
+          const dLoss = await this.trainCDiscriminatorOneStep(this.xTrain, this.yTrain, batch * this.batchSize, actualBatchSize);
           const gLoss = await this.trainCCombinedModelOneStep(2 * actualBatchSize);
           dgl = dLoss.toFixed(6);
           gl = gLoss.toFixed(6);
@@ -427,18 +454,21 @@ export default class GAN {
         }
       }
       
-      const dgen = document.getElementById('dgl');
-      const daux = document.getElementById('dal');
-      const g = document.getElementById('gl');
-      dgen.innerText = '';
-      daux.innerText = '';
-      g.innerText = '';
-      dgen.innerText = dgl.toString();
-      daux.innerText = dal.toString();
-      g.innerText = gl.toString();
+      const dgen_div = document.getElementById('dgl');
+      const daux_div = document.getElementById('dal');
+      const gl_div = document.getElementById('gl');
 
-      // const losses = document.getElementById('losses');
-      // losses.innerText = 'Hello, World!';
+      const dgen_new = document.createElement('div');
+      const daux_new = document.createElement('div');
+      const gl_new = document.createElement('div');
+
+      dgen_new.textContent = dgl.toString();
+      daux_new.textContent = dal.toString();
+      gl_new.textContent = gl.toString();
+
+      dgen_div.appendChild(dgen_new);
+      daux_div.appendChild(daux_new);
+      gl_div.appendChild(gl_new);
     }
   
     async download() {
@@ -562,7 +592,7 @@ export default class GAN {
     // Make a request for the MNIST sprited image.
     const img = new Image();
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", {willReadFrequently: true});
     const imgRequest = new Promise((resolve, reject) => {
       img.crossOrigin = "";
       img.onerror = reject;
@@ -632,7 +662,7 @@ export default class GAN {
     // Make a request for the MNIST sprited image.
     const img = new Image();
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", {willReadFrequently: true});
     const imgRequest = new Promise((resolve, reject) => {
       img.crossOrigin = "";
       img.onerror = reject;
@@ -666,7 +696,7 @@ export default class GAN {
     });
   
     const labelsRequest = fetch(MNIST_LABELS_PATH);
-    const [labelsResponse] = await Promise.all([imgRequest, labelsRequest]);
+    const [imgResponse, labelsResponse] = await Promise.all([imgRequest, labelsRequest]);
   
     let datasetLabels = new Uint8Array(await labelsResponse.arrayBuffer());
   
@@ -681,4 +711,35 @@ export default class GAN {
     // images: The data tensor, of shape `[numTrainExamples, 28, 28, 1]`.
     // labels: The one-hot encoded labels tensor, of shape `[numTrainExamples, 10]`.
     return {images, labels};
+  }
+
+  async function getData(i, l) {
+    // const IMAGES_PATH = './data/train-images-idx3-ubyte';
+    // const LABELS_PATH = './data/train-labels-idx1-ubyte';
+    
+    // const i_response = await fetch(i);
+    // const i_buffer = await i_response.arrayBuffer();
+    const i_buffer = await i.arrayBuffer();
+    const data = new DataView(i_buffer);
+    const numItems = data.getUint32(4, false);
+    const numRows = data.getUint32(8, false);
+    const numCols = data.getUint32(12, false);
+    const iOffset = 16;
+
+    // const l_response = await fetch(l);
+    // const l_buffer = await l_response.arrayBuffer();
+    const l_buffer = await l.arrayBuffer();
+    const lOffset = 8;
+
+    let imageData = new Uint8Array(i_buffer, iOffset);
+    let datasetLabels = new Uint8Array(l_buffer, lOffset);
+    const numClasses = new Set(datasetLabels);
+
+    let trainImages = imageData.slice(0, numRows * numCols * numItems);
+    let trainLabels = datasetLabels.slice(0, numClasses.size * numItems);
+    
+    const images = tf.tensor4d(trainImages, [numItems, numRows, numCols, 1]).sub(0.5).mul(2);
+    const labels = tf.oneHot(tf.tensor2d(trainLabels, [trainLabels.length, 1]).flatten(), numClasses.size);
+    
+    return { images, labels };
   }
