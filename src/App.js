@@ -14,8 +14,8 @@ function App() {
       <Hero />
       <CardCarousel />
       <CardCarouselSecond />
-      {/* <Grid />
-      <Gen /> */}
+      <Grid />
+      <Gen />
     </div>
   );
 }

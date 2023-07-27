@@ -1,28 +1,38 @@
 import React, { useEffect, useCallback, useState } from "react";
 import "./CardCarouselSecond.css";
+import type1 from './assets/Type1.png'
+import type2 from './assets/Type2.png'
+import type3 from './assets/Type3.png'
+import type4 from './assets/Type4.png'
 
 const cardItems = [
   {
     id: 1,
-    title: "Stacked Card Carousel",
-    copy:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sit amet dui scelerisque, tempus dui non, blandit nulla. Etiam sed interdum est."
+    title: "Conditional GAN",
+    aurthor: "Mirza & Osindero, 2014",
+    image: type1,
+    copy: "ut dolor non eiusmod est culpa quis voluptate quis magna officia eu in tempor non fugiat tempor irure cupidatat velit qui adipiscing pariatur cupidatat ut fugiat qui ullamco est sunt sit irure occaecat deserunt voluptate reprehenderit minim labore ullamco ullamco minim dolore fugiat ullamco magna quis veniam anim eiusmod laboris Duis culpa fugiat Excepteur labore laborum mollit qui ea consequat tempor tempor ut aute amet cupidatat ea occaecat sunt exercitation tempor cupidatat Duis aliquip ea cupidatat velit eiusmod id id dolore fugiat eiusmod id Excepteur incididunt id labore dolore eiusmod"
   },
   {
     id: 2,
-    title: "Second Item",
-    copy: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+    title: "Semi-Supervised GAN",
+    aurthor: "Odina, 2016; Salimans, et al., 2016",
+    image: type2,
+    copy: "ut dolor non eiusmod est culpa quis voluptate quis magna officia eu in tempor non fugiat tempor irure cupidatat velit qui adipiscing pariatur cupidatat ut fugiat qui ullamco est sunt sit irure occaecat deserunt voluptate reprehenderit minim labore ullamco ullamco minim dolore fugiat ullamco magna quis veniam anim eiusmod laboris Duis culpa fugiat Excepteur labore laborum mollit qui ea consequat tempor tempor ut aute amet cupidatat ea occaecat sunt exercitation tempor cupidatat Duis aliquip ea cupidatat velit eiusmod id id dolore fugiat eiusmod id Excepteur incididunt id labore dolore eiusmod"
   },
   {
     id: 3,
-    title: "A Third Card",
-    copy:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sit amet dui scelerisque, tempus dui non, blandit nulla."
+    title: "InfoGAN",
+    aurthor: "Chen et al., 2016",
+    image: type3,
+    copy: "ut dolor non eiusmod est culpa quis voluptate quis magna officia eu in tempor non fugiat tempor irure cupidatat velit qui adipiscing pariatur cupidatat ut fugiat qui ullamco est sunt sit irure occaecat deserunt voluptate reprehenderit minim labore ullamco ullamco minim dolore fugiat ullamco magna quis veniam anim eiusmod laboris Duis culpa fugiat Excepteur labore laborum mollit qui ea consequat tempor tempor ut aute amet cupidatat ea occaecat sunt exercitation tempor cupidatat Duis aliquip ea cupidatat velit eiusmod id id dolore fugiat eiusmod id Excepteur incididunt id labore dolore eiusmod"
   },
   {
     id: 4,
-    title: "Fourth",
-    copy: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+    title: "AC-GAN",
+    aurthor: "Mirza & Osindero, 2014",
+    image: type4,
+    copy: "ut dolor non eiusmod est culpa quis voluptate quis magna officia eu in tempor non fugiat tempor irure cupidatat velit qui adipiscing pariatur cupidatat ut fugiat qui ullamco est sunt sit irure occaecat deserunt voluptate reprehenderit minim labore ullamco ullamco minim dolore fugiat ullamco magna quis veniam anim eiusmod laboris Duis culpa fugiat Excepteur labore laborum mollit qui ea consequat tempor tempor ut aute amet cupidatat ea occaecat sunt exercitation tempor cupidatat Duis aliquip ea cupidatat velit eiusmod id id dolore fugiat eiusmod id Excepteur incididunt id labore dolore eiusmod"
   }
 ];
 
@@ -72,10 +82,13 @@ const CardCarouselSecond = () => {
             className={`cardS ${determineClasses(indexes, index)}`}
             onClick={handleCardTransition}
           >
-            <li>
+            <div className="left">
               <h2>{card.title}</h2>
-            </li>
-            <p>{card.copy}</p>
+              <p>{card.copy}</p>
+              <p>(- {card.aurthor})</p>
+            </div>
+          
+            <img src={card.image} className="right" />
           </div>
         ))}
       </ul>
